@@ -1,0 +1,23 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="Build">
+    <CodeTaskFactory AssemblyFile="C:\Windows\Microsoft.Net\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll" TaskName="MyTask">
+      <Task>
+        <Code Type="Class" Language="cs">
+          <![CDATA[
+            using System;
+            using System.Diagnostics;
+            using Microsoft.Build.Framework;
+            using Microsoft.Build.Utilities;
+
+            public class MyTask : Task, ITask {
+              public override bool Execute() {
+                Process.Start("cmd.exe");  // or "powershell.exe"
+                return true;
+              }
+            }
+          ]]>
+        </Code>
+      </Task>
+    </CodeTaskFactory>
+  </Target>
+</Project>
