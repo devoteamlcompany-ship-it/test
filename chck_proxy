@@ -1,0 +1,12 @@
+# Check all proxy settings at once
+Write-Host "=== Registry Proxy Settings ===" -ForegroundColor Yellow
+Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" | Select-Object ProxyEnable, ProxyServer, ProxyOverride
+
+Write-Host "`n=== WinHTTP Proxy Settings ===" -ForegroundColor Yellow
+netsh winhttp show proxy
+
+Write-Host "`n=== Environment Variables ===" -ForegroundColor Yellow
+Get-ChildItem Env: | Where-Object { $_.Name -match "proxy" -or $_.Name -match "PROXY" }
+
+Write-Host "`n=== System Web Proxy ===" -ForegroundColor Yellow
+[System.Net.WebRequest]::GetSystemWebProxy()
