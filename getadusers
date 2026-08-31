@@ -1,0 +1,4 @@
+# Get all sAMAccountNames using ADSI
+([ADSISearcher]"(&(objectCategory=user))").FindAll() | 
+    ForEach-Object { $_.Properties.samaccountname } | 
+    Out-File -FilePath ".\ADUsers.txt"
