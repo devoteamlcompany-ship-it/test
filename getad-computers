@@ -1,1 +1,45 @@
+# Export results to CSV for further analysis
+function Get-ADComputersNoModule {
+    $domain = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+    $root = [ADSI]"LDAP://$($domain.Name)"
+    $searcher = New-Object DirectoryServices.DirectorySearcher($root)
+    $searcher.Filter = "(objectClass=computer)"
+    $searcher.PageSize = 1000
+    $searcher.PropertiesToLoad.AddRange(@("name", "dNSHostName"))
+    
+    $computers = $searcher.FindAll()
+    $results = @()
+    
+    foreach ($computer in $computers) {
+        $hostname = $computer.Properties["dNSHostName"][0]
+        $result = [PSCustomObject]@{
+            ComputerName = $computer.Properties["name"][0]
+            Hostname = $hostname
+            IPAddress = $null
+            Status = $null
+        }
+        
+        if ($hostname) {
+            try {
+                $ip = [System.Net.Dns]::GetHostAddresses($hostname) | 
+                      Where-Object {$_.AddressFamily -eq 'InterNetwork'} | 
+                      Select-Object -First 1
+                $result.IPAddress = $ip.IPAddressToString
+                $result.Status = "Resolved"
+            } catch {
+                $result.Status = "DNS Resolution Failed"
+            }
+        } else {
+            $result.Status = "No Hostname"
+        }
+        
+        $results += $result
+    }
+    
+    return $results
+}
 
+# Usage
+$computers = Get-ADComputersNoModule
+$computers | Export-Csv -Path "C:\temp\AD_Hosts.csv" -NoTypeInformation
+$computers | Format-Table -AutoSize
